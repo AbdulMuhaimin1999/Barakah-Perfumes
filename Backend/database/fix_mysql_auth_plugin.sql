@@ -1,0 +1,41 @@
+-- =============================================================================
+-- Fix: "Server requests authentication using unknown plugin auth_gssapi_client"
+-- Node.js (mysql2) cannot use GSSAPI/Kerberos. Your DB user must use a
+-- password-based plugin instead.
+--
+-- HOW TO RUN
+-- 1) Open a tool that ALREADY connects to this server (HeidiSQL, DBeaver,
+--    MySQL Workbench, or mysql.exe from the same vendor as your server).
+-- 2) Uncomment EXACTLY ONE block below (A for MySQL 8, C for MariaDB).
+-- 3) Replace YourPasswordHere; adjust user/host if needed.
+-- 4) Update Backend/.env DB_PASSWORD; try DB_HOST=127.0.0.1 on Windows.
+-- 5) Restart the API: npm run dev
+-- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- Option A — Oracle MySQL 8.0+ (caching_sha2_password)
+-- ---------------------------------------------------------------------------
+-- ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'YourPasswordHere';
+-- FLUSH PRIVILEGES;
+
+-- ---------------------------------------------------------------------------
+-- Option B — Oracle MySQL (mysql_native_password, if enabled on your server)
+-- ---------------------------------------------------------------------------
+-- ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'YourPasswordHere';
+-- FLUSH PRIVILEGES;
+
+-- ---------------------------------------------------------------------------
+-- Option C — MariaDB (when root uses GSSAPI / incompatible plugin)
+-- If this fails, try: ALTER USER 'root'@'localhost' IDENTIFIED BY 'YourPasswordHere';
+-- ---------------------------------------------------------------------------
+-- ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('YourPasswordHere');
+-- FLUSH PRIVILEGES;
+
+-- ---------------------------------------------------------------------------
+-- Option D — Dedicated app user (after root works with A/B/C)
+-- ---------------------------------------------------------------------------
+-- CREATE DATABASE IF NOT EXISTS essential_perfume;
+-- CREATE USER 'perfume_app'@'localhost' IDENTIFIED BY 'YourPasswordHere';
+-- GRANT ALL PRIVILEGES ON essential_perfume.* TO 'perfume_app'@'localhost';
+-- FLUSH PRIVILEGES;
+-- Then in Backend/.env: DB_USER=perfume_app  DB_PASSWORD=YourPasswordHere
